@@ -223,7 +223,7 @@ function createCommand () {
 
     # Authentication parameters    
     $cmd += if ($useSSO) { " -useSSO" } else { "" }
-	$cmd += if ($CxToken) { " -CxToken $CxToken" } else { "" }
+    $cmd += if ($CxToken) { " -CxToken $CxToken" } else { "" }
     $cmd += if ($CxUser) { " -CxUser $CxUser" } else { "" }
     $cmd += if ($CxPassword) { " -CxPassword `"$CxPassword`"" } else { "" }    
 
@@ -284,33 +284,23 @@ function createCommand () {
 }
 
 function InstallCxConsolePlugin() {
-
     # Full name of the plugin file
-    $cliPluginFile = $cliPlugin + ".zip"
-
+    $cliPluginFile = "$cliPlugin.zip"
+	
     # URL for Checkmarx CLI Tool
-    $pluginUrl = "https://download.checkmarx.com/$sastVersion/Plugins/$cliPluginFile"
+    $url = "https://download.checkmarx.com/$sastVersion/Plugins/$cliPluginFile"
 
-    # Download the CLI zip file
-    Write-Host "Downloading Checkmarx CLI Plugin from $pluginUrl"
-    (New-Object System.Net.WebClient).DownloadFile($pluginUrl, $cliPluginFile)
+    # Download file
+    (New-Object System.Net.WebClient).DownloadFile($url, $cliPluginFile)
+    # Unzip file 
+    Expand-Archive $cliPluginFile -Force
 
-    # Unzip the downloaded zip file
-    $unzipDir = "CxConsolePlugin"
-    Write-Host "Unzipping plugin to [$unzipDir]"
-    Expand-Archive -Path $cliPluginFile -Force -DestinationPath $unzipDir
-
-    # Path where the CLI tool now lives
-    $cliPath = "${unzipDir}\${cliPlugin}"
-    Write-Host "CxConsole is in [$cliPath]"
-
-    return $cliPath
+    return "$cliPlugin\$cliPlugin"
 }
-
 
 # ========== Execution Entry ========== #
 
 $cliPath = InstallCxConsolePlugin
-$command = ".\$cliPath\" + (createCommand)
+$command = "$cliPath\" + (createCommand)
 Write-Host "Executing command $command"
 Invoke-Expression "$command"
